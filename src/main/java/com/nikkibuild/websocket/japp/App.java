@@ -62,16 +62,26 @@ public class App implements SocketDelegate {
                     //ignore
                 }
                 switch (command) {
-                    case -1 -> println("Invalid Command");
-                    case 1 -> {
+                    case -1: {
+                        println("Invalid Command");
+                        break;
+                    }
+                    case 1: {
                         if (connected) {
                             send();
                         } else {
                             start();
                         }
+                        break;
                     }
-                    case 2 -> stop();
-                    case 0 -> exit();
+                    case 2: {
+                        stop();
+                        break;
+                    }
+                    case 0: {
+                        exit();
+                        break;
+                    }
                 }
             }
         }

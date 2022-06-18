@@ -69,7 +69,23 @@ public class SocketEventListener extends WebSocketListener {
     }
 }
 
-record SocketEvent(WebSocket socket, SocketStatus status) {
+class SocketEvent {
+    private final WebSocket socket;
+    private final SocketStatus status;
+
+    SocketEvent(WebSocket socket, SocketStatus status) {
+        this.socket = socket;
+        this.status = status;
+    }
+
+    public SocketStatus status() {
+        return status;
+    }
+
+    public WebSocket socket() {
+        return socket;
+    }
+
     enum SocketStatus {
         CLOSED, OPENED, ERROR
     }
