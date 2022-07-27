@@ -4,24 +4,21 @@ import com.google.gson.Gson;
 import com.nikkibuild.websocket.japp.util.ServiceDefinition;
 import com.nikkibuild.websocket.japp.util.ServiceToken;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-@Singleton
 public class PropertiesProvider {
     private final ServiceDefinition serviceDefinition;
     private final ServiceToken      serviceToken;
 
-    @Inject
-    PropertiesProvider() {
+    public PropertiesProvider(String definitionPath,String tokenPath) {
         try {
-            var stream = new FileInputStream("./serviceDef.json");
+            var stream = new FileInputStream(definitionPath);
             var reader = new InputStreamReader(stream);
             serviceDefinition = new Gson().fromJson(reader, ServiceDefinition.class);
-            stream            = new FileInputStream("./serviceToken.json");
+            stream            = new FileInputStream(tokenPath);
             reader            = new InputStreamReader(stream);
             serviceToken      = new Gson().fromJson(reader, ServiceToken.class);
         } catch (IOException e) {

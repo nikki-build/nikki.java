@@ -1,7 +1,6 @@
 package com.nikkibuild.websocket.japp;
 
 import com.google.gson.Gson;
-import com.nikkibuild.websocket.japp.config.DaggerAppComponent;
 import com.nikkibuild.websocket.japp.util.Anything;
 import lombok.SneakyThrows;
 
@@ -10,7 +9,7 @@ import java.io.InputStreamReader;
 
 public class Main {
     public static void main(String[] args) {
-        var app = DaggerAppComponent.create().app();
+        var app = new App();
         app.startApp();
     }
 

@@ -1,6 +1,5 @@
 package com.nikkibuild.websocket.japp.socket;
 
-import com.nikkibuild.websocket.japp.util.Message;
 import okhttp3.WebSocket;
 
 public interface SocketDelegate {
@@ -8,5 +7,5 @@ public interface SocketDelegate {
 
     void onDisconnect(WebSocket socket, String reason);
 
-    void onMessage(Message message);
+    void onData(Object message);
 }

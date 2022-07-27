@@ -3,17 +3,14 @@ package com.nikkibuild.websocket.japp.socket;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.time.Duration;
 
-@Singleton
-class ThrottleManager {
-    private final Bandwidth limit  = Bandwidth.simple(5, Duration.ofMinutes(1));
-    private final Bucket    bucket = Bucket.builder().addLimit(limit).build();
+public class ThrottleManager {
+    private final Bucket bucket;
 
-    @Inject
-    ThrottleManager() {
+    public ThrottleManager(long capacity, long duration) {
+        var limit = Bandwidth.simple(capacity, Duration.ofMinutes(duration));
+        bucket = Bucket.builder().addLimit(limit).build();
     }
 
     boolean canSend() {

@@ -3,6 +3,7 @@ package com.nikkibuild.websocket.japp;
 import com.nikkibuild.websocket.japp.socket.SocketDelegate;
 import com.nikkibuild.websocket.japp.socket.SocketEventListener;
 import com.nikkibuild.websocket.japp.socket.SocketManager;
+import com.nikkibuild.websocket.japp.socket.ThrottleManager;
 import com.nikkibuild.websocket.japp.util.Anything;
 import com.nikkibuild.websocket.japp.util.Message;
 import com.nikkibuild.websocket.japp.util.ServiceDefinition;
@@ -10,34 +11,22 @@ import com.nikkibuild.websocket.japp.util.ServiceToken;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import okhttp3.WebSocket;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.Scanner;
 import java.util.UUID;
 
-@Singleton
 public class App implements SocketDelegate {
-    private final SocketEventListener eventListener;
-    private final SocketManager       socketManager;
-    private final Scanner             scanner;
-    private final ServiceToken        token;
-    private final ServiceDefinition   definition;
-    private       boolean             connected;
+    private final SocketManager socketManager;
+    private final Scanner       scanner;
+    private       boolean       connected;
 
-    @Inject
-    public App(SocketEventListener eventListener, SocketManager socketManager,
-               ServiceToken token,
-               ServiceDefinition definition) {
-        this.eventListener = eventListener;
-        this.socketManager = socketManager;
-        this.token         = token;
-        this.definition    = definition;
-        scanner            = new Scanner(System.in);
+    public App() {
+        this.socketManager = new SocketManager("./serviceDef.json", "./serviceToken.json", this, new ThrottleManager(5, 1));
+
+        scanner = new Scanner(System.in);
     }
 
     public void startApp() {
         println("---------- W E B  S O C K E T ----------");
-        eventListener.setDelegate(this);
         showMenu();
     }
 
@@ -118,7 +107,7 @@ public class App implements SocketDelegate {
         var text = UUID.randomUUID().toString();
         println("Sending=> " + text);
         var message = temporaryMessage(text);
-        socketManager.send(message)
+        socketManager.sendData(message)
                 .subscribeOn(Schedulers.io())
                 .subscribe(() -> {
                     println();
@@ -129,13 +118,8 @@ public class App implements SocketDelegate {
                 });
     }
 
-    private Message temporaryMessage(String text) {
-        var message = new Anything(text);
-        var d       = new Message.Data("n", "d", message);
-        return new Message(
-                definition.getServiceId(), token.getSessionId(), definition.getInstanceId(),
-                "name", "msg", d, "ok", "desc"
-        );
+    private Object temporaryMessage(String text) {
+        return text;
     }
 
 
@@ -154,9 +138,9 @@ public class App implements SocketDelegate {
     }
 
     @Override
-    public void onMessage(Message message) {
+    public void onData(Object message) {
         println();
-        println("New Message received! " + message.getMsg());
+        println("New Message received! " + message);
     }
 
     private void println() {

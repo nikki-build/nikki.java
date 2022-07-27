@@ -1,21 +1,16 @@
 package com.nikkibuild.websocket.japp.socket;
 
 import com.google.gson.Gson;
-import com.nikkibuild.websocket.japp.util.Message;
-import com.nikkibuild.websocket.japp.util.ServiceDefinition;
-import com.nikkibuild.websocket.japp.util.ServiceJoinInfo;
-import com.nikkibuild.websocket.japp.util.ServiceToken;
+import com.nikkibuild.websocket.japp.config.ServiceConfig;
+import com.nikkibuild.websocket.japp.util.*;
 import io.reactivex.rxjava3.core.Completable;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.WebSocket;
 import org.apache.commons.codec.binary.Base64;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.nio.charset.StandardCharsets;
 
-@Singleton
 public class SocketManager {
     private final Gson                transformer = new Gson();
     private final SocketEventListener eventListener;
@@ -25,16 +20,13 @@ public class SocketManager {
     private final ThrottleManager     throttleManager;
     private       WebSocket           socket;
 
-    @Inject
-    SocketManager(SocketEventListener eventListener,
-                  OkHttpClient okHttp,
-                  ServiceDefinition properties,
-                  ServiceToken serviceToken,
-                  ThrottleManager throttleManager) {
-        this.eventListener   = eventListener;
-        this.okHttp          = okHttp;
-        this.properties      = properties;
-        this.token           = serviceToken;
+    public SocketManager(String definitionPath, String tokenPath, SocketDelegate eventListener, ThrottleManager throttleManager) {
+        this.eventListener = new SocketEventListener();
+        this.eventListener.setDelegate(eventListener);
+        var serviceConfig = new ServiceConfig(definitionPath, tokenPath);
+        this.okHttp          = ServiceConfig.okHttp();
+        this.properties      = serviceConfig.serviceDefinition();
+        this.token           = serviceConfig.serviceToken();
         this.throttleManager = throttleManager;
     }
 
@@ -82,12 +74,17 @@ public class SocketManager {
     }
 
 
-    public Completable send(Message message) {
+    public Completable sendData(Object data) {
         return Completable.create(e -> {
             try {
                 if (!throttleManager.canSend()) {
                     throw new IllegalArgumentException("Bandwidth limit reached. Limit [5] messages in a minute");
                 }
+                var d = new Message.Data("n", "d", data);
+                var message = new Message(
+                        properties.getServiceId(), token.getSessionId(), properties.getInstanceId(),
+                        "name", "msg", d, "ok", "desc"
+                );
                 var json = transformer.toJson(message);
                 if (socket != null) {
                     socket.send(json);
